@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/v1/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Araceli Ponce Sanga</title>
+
+  <!-- requisitos. ser mayor de 18 años pero no haber acabado la universidad -->
+
+  <!-- Supabase  -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <!-- Slider -->
+  <script src="https://cdn.jsdelivr.net/npm/keen-slider@5.5.0/keen-slider.min.js" defer></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Work+Sans|Rubik" rel="stylesheet">
+
+  <!-- Trail -->
+  <!-- <script src="src/js/imagesloaded.pkgd.min.js" defer></script> -->
+  <!-- <script src="src/js/TweenMax.min.js" defer></script> -->
+  <!-- <script src="src/js/trail.min.js" defer></script> -->
+
+  <!-- <link rel="stylesheet" href="base.min.css"> -->
+
+  <meta name="description" content="I thrive on self-learning. With a few certifications and a bunch of featured and mini-projects, I let my evidence do the talking">
+
+  <script type="module" crossorigin src="/v1/assets/index-af96ece9.js"></script>
+  <link rel="stylesheet" href="/v1/assets/index-711f17f2.css">
+</head>
+
+<body>
+  <div id="app"></div>
+
+
+  
+  <!-- <script type="module" src="./src/main.js"></script> -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      window.jsSlider = []
+
+      let allSliders = document.querySelectorAll('.slider-js');
+
+      for (let index = 0, len = allSliders.length; index < len; index++) {
+        let slider = allSliders[index]
+        let progress = slider.querySelector('.progress')
+
+        function updateClasses(instance, slider) {
+
+          let slide = instance.details().relativeSlide
+          let arrowLeft = slider.querySelector(".arrow-left")
+          let arrowRight = slider.querySelector(".arrow-right")
+          if (arrowRight) {
+            slide === 0 ? arrowLeft.classList.add("arrow--disabled") : arrowLeft.classList.remove("arrow--disabled")
+          }
+
+
+          if (arrowLeft) {
+            slide === instance.details().size - 1 ? arrowRight.classList.add("arrow--disabled") : arrowRight.classList.remove("arrow--disabled")
+          }
+
+          let dots = slider.querySelectorAll(".dot")
+          if (dots) {
+            dots.forEach(function (dot, idx) {
+              idx === slide
+                ? dot.classList.add("dot--active")
+                : dot.classList.remove("dot--active")
+            })
+          }
+
+        }
+
+        let sliderInterval = 0;
+        function autoplay(mainSlider, run) {
+          clearInterval(sliderInterval);
+          sliderInterval = setInterval(() => {
+            if (run && mainSlider) {
+              mainSlider.next();
+            }
+          }, 5000);
+        }
+
+        let extraData = {
+          created: function (instance) {
+            if (slider.querySelector(".arrow-left")) {
+              slider.querySelector(".arrow-left")
+                .addEventListener("click", function () {
+                  instance.prev()
+                  if (progress) {
+                    progress.classList.remove('active');
+                    setTimeout(() => {
+                      progress.classList.add('active');
+                    }, 50);
+                  }
+                })
+
+            }
+            if (slider.querySelector(".arrow-right")) {
+
+              slider.querySelector(".arrow-right")
+                .addEventListener("click", function () {
+                  instance.next()
+                  if (progress) {
+                    progress.classList.remove('active');
+                    setTimeout(() => {
+                      progress.classList.add('active');
+                    }, 50);
+                  }
+                })
+            }
+
+            let dots_wrapper = slider.querySelector(".dots")
+
+            if (dots_wrapper) {
+              let slides = slider.querySelectorAll(".keen-slider__slide")
+              slides.forEach(function (t, idx) {
+                let dot = document.createElement("button")
+                dot.classList.add("dot")
+                dots_wrapper.appendChild(dot)
+                dot.addEventListener("click", function () {
+                  instance.moveToSlide(idx)
+                })
+              })
+            }
+            updateClasses(instance, slider)
+          },
+
+          slideChanged(instance) {
+            updateClasses(instance, slider);
+            if (slider.dataset.slider) {
+
+              let dataSlider = JSON.parse(slider.dataset.slider)
+              dataSlider = dataSlider;
+
+              if (dataSlider.navFor) {
+
+                let slide = instance.details().relativeSlide;
+                let size = instance.details().size;
+                if (window.jsSlider[dataSlider.navFor]) {
+                  window.jsSlider[dataSlider.navFor].moveToSlide(slide)
+                }
+
+              }
+            }
+
+
+          }
+        }
+
+        if (slider.dataset.slider) {
+          let dataSlider = JSON.parse(slider.dataset.slider)
+
+          dataSlider = dataSlider;
+          dataSlider = { ...dataSlider, ...extraData }
+
+
+          if (dataSlider.progress && progress) {
+            progress.classList.add('active')
+          }
+
+          let autoPlayData = {
+            dragStart: (e) => {
+              autoplay(mainSlider, false)
+            },
+            dragEnd: (e) => {
+              autoplay(mainSlider, true)
+            }
+          }
+
+          if (dataSlider.autoplay) {
+            dataSlider = { ...dataSlider, ...autoPlayData }
+          }
+
+          let selectSlider = slider.querySelector('.keen-slider');
+          let mainSlider = new KeenSlider(selectSlider, dataSlider)
+
+          if (dataSlider.autoplay) {
+            autoplay(mainSlider, true)
+          }
+
+
+          if (dataSlider.id) {
+            console.log("id: ", dataSlider.id);
+            window.jsSlider[dataSlider.id] = mainSlider
+          }
+
+        } else {
+          console.log("Please add the data-slider values")
+        }
+
+      }
+
+
+
+
+      // ++ON VIEWPORT WIDER THAN 1000 THE DATA SLIDEDPERVIEW CHANGES TO 2.5
+      function handleResize() {
+        // Iterate through all sliders and update slidesPerView based on viewport width
+        for (let index = 0, len = allSliders.length; index < len; index++) {
+          let slider = allSliders[index];
+          let dataSlider = JSON.parse(slider.dataset.slider);
+
+          // Check if the viewport width is wider than 1000px
+          if (window.innerWidth > 1000) {
+            dataSlider.slidesPerView = 2.5; // Update slidesPerView to '2.5'
+          } else {
+            dataSlider.slidesPerView = 1.5; // Reset slidesPerView to '1.5'
+          }
+
+          // Destroy the existing slider instance
+          if (window.jsSlider[dataSlider.id]) {
+            window.jsSlider[dataSlider.id].destroy();
+          }
+
+          // Reinitialize the slider with the updated configuration
+          let selectSlider = slider.querySelector('.keen-slider');
+          let mainSlider = new KeenSlider(selectSlider, dataSlider);
+
+          // Store the new slider instance
+          window.jsSlider[dataSlider.id] = mainSlider;
+        }
+      }
+
+      // handleResize();
+      // window.addEventListener('resize', handleResize);
+
+
+      // renderTimeEverySecond();
+
+
+
+      // Envuelve cada imagen importante en un enlace
+      // Get the main element
+      const mainElement = document.querySelector('main');
+
+      // Get all images 
+      const images = mainElement.querySelectorAll('img:not(.random-image)');
+
+      // Process each image
+      images.forEach((image) => {
+        // Create the anchor element
+        const anchor = document.createElement('a');
+
+        // Set the anchor's href to the image's src attribute
+        anchor.href = image.src;
+
+        // Clone the image node and append it to the anchor
+        const clonedImage = image.cloneNode(true);
+        anchor.appendChild(clonedImage);
+
+        // Replace the original image with the anchor
+        image.parentNode.replaceChild(anchor, image);
+      });
+
+
+    });
+
+
+
+  </script>
+
+
+  <script src="https://unpkg.com/draggabilly@3/dist/draggabilly.pkgd.min.js"></script>
+  <script>
+
+
+    function makeItemsDraggable() {
+      var draggableElems = document.querySelectorAll('.drag-it');
+      var draggies = [];
+
+      for (var i = 0; i < draggableElems.length; i++) {
+        var draggableElem = draggableElems[i];
+        var draggie = new Draggabilly(draggableElem, {});
+        draggies.push(draggie);
+      }
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      makeItemsDraggable();
+    })
+  </script>
+
+
+  <script src="/v1/imagesloaded.pkgd.min.js"></script>
+  <script src="/v1/TweenMax.min.js"></script>
+  <script src="/v1/trail.js"></script>
+
+
+</body>
+
+</html>
